@@ -1,0 +1,69 @@
+name: Yearly Giortes Update
+
+on:
+  schedule:
+    # 1 January each year at 03:00 UTC — publish that year's calendar
+    - cron: '0 3 1 1 *'
+  workflow_dispatch:
+    inputs:
+      year:
+        description: 'Gregorian year to generate (1900–2099). Leave empty for current UTC year.'
+        required: false
+        type: string
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Resolve target year
+        id: year
+        run: |
+          if [ -n "${{ inputs.year }}" ]; then
+            YEAR="${{ inputs.year }}"
+          else
+            YEAR="$(date -u +%Y)"
+          fi
+          if ! [[ "$YEAR" =~ ^[0-9]{4}$ ]]; then
+            echo "Invalid year: $YEAR"
+            exit 1
+          fi
+          echo "year=$YEAR" >> "$GITHUB_OUTPUT"
+          echo "Building calendar for $YEAR"
+
+      - name: Build Database
+        env:
+          EORTOLOGIO_YEAR: ${{ steps.year.outputs.year }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node build_database.js
+
+      - name: Create or Update GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG=$(cat dist/tag.txt)
+          YEAR_FILE="dist/eortologio-${TAG}.json"
+          YEAR_MIN="dist/eortologio-${TAG}-minified.json"
+          echo "Publishing release ${TAG}..."
+          if gh release view "${TAG}" > /dev/null 2>&1; then
+            echo "Release ${TAG} already exists. Updating release notes and uploading assets..."
+            gh release edit "${TAG}" --notes-file dist/release_notes.md
+            gh release upload "${TAG}" "${YEAR_MIN}" "${YEAR_FILE}" --clobber
+          else
+            echo "Creating new release ${TAG}..."
+            gh release create "${TAG}" "${YEAR_MIN}" "${YEAR_FILE}" \
+              --title "Eortologio ${TAG}" \
+              --notes-file dist/release_notes.md \
+              --latest
+          fi

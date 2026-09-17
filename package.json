@@ -1,0 +1,19 @@
+{
+  "name": "eortologio-offline-database",
+  "version": "1.0.0",
+  "description": "Automated yearly Greek nameday (giortes) calendars computed with the Eortologio app logic.",
+  "main": "build_database.js",
+  "scripts": {
+    "build": "node build_database.js",
+    "build:year": "node build_database.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/athanasso/eortologio-offline-database.git"
+  },
+  "author": "athanasso",
+  "license": "ODbL-1.0",
+  "engines": {
+    "node": ">=18"
+  }
+}

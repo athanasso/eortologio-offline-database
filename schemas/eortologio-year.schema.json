@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/athanasso/eortologio-offline-database/main/schemas/eortologio-year.schema.json",
+  "title": "Eortologio Year Calendar",
+  "description": "Full-year Greek nameday (giortes) calendar generated from Orthodox Pascha offsets and fixed feast datasets.",
+  "type": "object",
+  "required": ["license", "repository", "year", "pascha", "lastUpdate", "data"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "license": { "type": "string" },
+    "repository": { "type": "string", "format": "uri" },
+    "year": { "type": "integer", "minimum": 1900, "maximum": 2099 },
+    "pascha": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "description": "Orthodox Pascha (Easter) date in Gregorian calendar (YYYY-MM-DD)."
+    },
+    "lastUpdate": {
+      "type": "integer",
+      "description": "Unix timestamp (seconds) when this file was generated."
+    },
+    "movableFeasts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "date", "daysFromPascha"],
+        "properties": {
+          "name": { "type": "string" },
+          "date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+          "daysFromPascha": { "type": "integer" }
+        }
+      }
+    },
+    "movingNamedays": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["date", "day", "month", "names", "feastName"],
+        "properties": {
+          "date": { "type": "string" },
+          "day": { "type": "integer", "minimum": 1, "maximum": 31 },
+          "month": { "type": "integer", "minimum": 1, "maximum": 12 },
+          "names": { "type": "array", "items": { "type": "string" } },
+          "feastName": { "type": "string" },
+          "isHoliday": { "type": "boolean" }
+        }
+      }
+    },
+    "data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["date", "day", "month", "celebrating_names", "saints", "holidays"],
+        "properties": {
+          "date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+          "day": { "type": "integer", "minimum": 1, "maximum": 31 },
+          "month": { "type": "integer", "minimum": 1, "maximum": 12 },
+          "celebrating_names": { "type": "array", "items": { "type": "string" } },
+          "saints": { "type": "array", "items": { "type": "string" } },
+          "holidays": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}
